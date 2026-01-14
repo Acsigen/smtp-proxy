@@ -1,0 +1,35 @@
+{
+    "smtp": {
+        "host": "0.0.0.0",
+        "port": 2525,
+        "domain": "localhost",
+        "read_timeout_seconds": 10,
+        "write_timeout_seconds": 10,
+        "max_message_bytes": 10485760,
+        "max_recipients": 50,
+        "allow_insecure_auth": true,
+        "tls": {
+            "enabled": false,
+            "cert_file": "certs/server.crt",
+            "key_file": "certs/server.key"
+        },
+        "auth": {
+            "required": true,
+            "username": "mailuser",
+            "password": "mailpass"
+        }
+    },
+    "web": {
+        "host": "0.0.0.0",
+        "port": 8080,
+        "session_secret": "change-this-to-32-byte-secret!!",
+        "session_name": "smtp_proxy_session"
+    },
+    "database": {
+        "path": "./data/smtp_proxy.db"
+    },
+    "admin": {
+        "username": "admin",
+        "password": "changeme"
+    }
+}
