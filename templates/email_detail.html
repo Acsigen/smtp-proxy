@@ -1,6 +1,8 @@
-{{template "base" .}}
+{% extends "base.html" %}
 
-{{define "content"}}
+{% block title %}Email {{ email.id }} - SMTP Proxy{% endblock %}
+
+{% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Email Details</h2>
     <a href="/emails" class="btn btn-outline-secondary">Back to List</a>
@@ -10,15 +12,15 @@
     <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                {{if .Email.Subject}}{{.Email.Subject}}{{else}}<em class="text-muted">(no subject)</em>{{end}}
+                {% if email.subject %}{{ email.subject }}{% else %}<em class="text-muted">(no subject)</em>{% endif %}
             </h5>
-            {{if .Email.IsNew}}
-            <form action="/emails/{{.Email.ID}}/mark-read" method="POST">
+            {% if email.is_new() %}
+            <form action="/emails/{{ email.id }}/mark-read" method="POST">
                 <button type="submit" class="btn btn-sm btn-outline-primary">Mark as Read</button>
             </form>
-            {{else}}
+            {% else %}
             <span class="badge bg-secondary">Read</span>
-            {{end}}
+            {% endif %}
         </div>
     </div>
     <div class="card-body">
@@ -26,48 +28,48 @@
             <tbody>
                 <tr>
                     <th style="width: 120px;">ID:</th>
-                    <td>{{.Email.ID}}</td>
+                    <td>{{ email.id }}</td>
                 </tr>
                 <tr>
                     <th>From:</th>
-                    <td>{{.Email.Sender}}</td>
+                    <td>{{ email.sender }}</td>
                 </tr>
                 <tr>
                     <th>To:</th>
-                    <td>{{.Email.RecipientsDisplay}}</td>
+                    <td>{{ email.recipients_display() }}</td>
                 </tr>
                 <tr>
                     <th>Received:</th>
-                    <td>{{.Email.ReceivedAt.Format "2006-01-02 15:04:05 MST"}}</td>
+                    <td>{{ email.received_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</td>
                 </tr>
                 <tr>
                     <th>Size:</th>
-                    <td>{{.Email.SizeBytes}} bytes</td>
+                    <td>{{ email.size_bytes }} bytes</td>
                 </tr>
                 <tr>
                     <th>Status:</th>
                     <td>
-                        {{if .Email.IsNew}}
+                        {% if email.is_new() %}
                         <span class="badge bg-primary">New</span>
-                        {{else if .Email.IsRead}}
+                        {% elif email.is_read() %}
                         <span class="badge bg-secondary">Read</span>
-                        {{else}}
-                        <span class="badge bg-info">{{.Email.Status}}</span>
-                        {{end}}
+                        {% else %}
+                        <span class="badge bg-info">{{ email.status }}</span>
+                        {% endif %}
                     </td>
                 </tr>
-                {{if .Email.AuthUser}}
+                {% if email.auth_user %}
                 <tr>
                     <th>Auth User:</th>
-                    <td>{{.Email.AuthUser}}</td>
+                    <td>{{ email.auth_user }}</td>
                 </tr>
-                {{end}}
-                {{if .Email.ClientIP}}
+                {% endif %}
+                {% if email.client_ip %}
                 <tr>
                     <th>Client IP:</th>
-                    <td>{{.Email.ClientIP}}</td>
+                    <td>{{ email.client_ip }}</td>
                 </tr>
-                {{end}}
+                {% endif %}
             </tbody>
         </table>
     </div>
@@ -78,7 +80,7 @@
         <h5 class="mb-0">Message Body</h5>
     </div>
     <div class="card-body">
-        <div class="email-body">{{.Email.Body}}</div>
+        <div class="email-body">{{ email.body }}</div>
     </div>
 </div>
 
@@ -91,9 +93,9 @@
         </h2>
         <div id="rawMessageCollapse" class="accordion-collapse collapse" data-bs-parent="#rawMessageAccordion">
             <div class="accordion-body">
-                <div class="raw-message">{{printf "%s" .Email.RawMessage}}</div>
+                <div class="raw-message">{{ email.raw_message.decode('utf-8', errors='replace') }}</div>
             </div>
         </div>
     </div>
 </div>
-{{end}}
+{% endblock %}

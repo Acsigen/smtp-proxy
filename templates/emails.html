@@ -1,23 +1,25 @@
-{{template "base" .}}
+{% extends "base.html" %}
 
-{{define "content"}}
+{% block title %}Emails - SMTP Proxy{% endblock %}
+
+{% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Received Emails <span class="badge bg-secondary">{{.Count}}</span></h2>
-    {{if gt .Count 0}}
+    <h2>Received Emails <span class="badge bg-secondary">{{ email_count }}</span></h2>
+    {% if email_count > 0 %}
     <form action="/emails/wipe" method="POST" id="wipeForm">
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmWipeModal">
             Wipe All Emails
         </button>
     </form>
-    {{end}}
+    {% endif %}
 </div>
 
-{{if .Message}}
+{% if message %}
 <div class="alert alert-success alert-dismissible fade show" role="alert">
-    {{.Message}}
+    {{ message }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
-{{end}}
+{% endif %}
 
 <div class="table-responsive">
     <table class="table table-striped table-hover">
@@ -33,36 +35,36 @@
             </tr>
         </thead>
         <tbody>
-            {{range .Emails}}
+            {% for email in emails %}
             <tr>
-                <td>{{.ID}}</td>
+                <td>{{ email.id }}</td>
                 <td>
-                    {{if .IsNew}}
+                    {% if email.is_new() %}
                     <span class="badge bg-primary">New</span>
-                    {{else if .IsRead}}
+                    {% elif email.is_read() %}
                     <span class="badge bg-secondary">Read</span>
-                    {{else}}
-                    <span class="badge bg-info">{{.Status}}</span>
-                    {{end}}
+                    {% else %}
+                    <span class="badge bg-info">{{ email.status }}</span>
+                    {% endif %}
                 </td>
-                <td class="text-truncate" style="max-width: 200px;" title="{{.Sender}}">{{.Sender}}</td>
-                <td class="text-truncate" style="max-width: 300px;" title="{{.Subject}}">
-                    {{if .Subject}}{{.Subject}}{{else}}<em class="text-muted">(no subject)</em>{{end}}
+                <td class="text-truncate" style="max-width: 200px;" title="{{ email.sender }}">{{ email.sender }}</td>
+                <td class="text-truncate" style="max-width: 300px;" title="{{ email.subject }}">
+                    {% if email.subject %}{{ email.subject }}{% else %}<em class="text-muted">(no subject)</em>{% endif %}
                 </td>
-                <td>{{.SizeBytes}} B</td>
-                <td>{{.ReceivedAt.Format "2006-01-02 15:04:05"}}</td>
+                <td>{{ email.size_bytes }} B</td>
+                <td>{{ email.received_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                 <td>
-                    <a href="/emails/{{.ID}}" class="btn btn-sm btn-outline-primary">View</a>
+                    <a href="/emails/{{ email.id }}" class="btn btn-sm btn-outline-primary">View</a>
                 </td>
             </tr>
-            {{else}}
+            {% else %}
             <tr>
                 <td colspan="7" class="text-center text-muted py-4">
                     <p class="mb-0">No emails received yet.</p>
                     <small>Emails sent to this SMTP server will appear here.</small>
                 </td>
             </tr>
-            {{end}}
+            {% endfor %}
         </tbody>
     </table>
 </div>
@@ -76,7 +78,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete all {{.Count}} email(s)?</p>
+                <p>Are you sure you want to delete all {{ email_count }} email(s)?</p>
                 <p class="text-danger"><strong>This action cannot be undone.</strong></p>
             </div>
             <div class="modal-footer">
@@ -86,12 +88,12 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-document.getElementById('confirmWipeBtn').addEventListener('click', handleWipeConfirm);
-
-function handleWipeConfirm() {
+document.getElementById('confirmWipeBtn')?.addEventListener('click', function() {
     document.getElementById('wipeForm').submit();
-}
+});
 </script>
-{{end}}
+{% endblock %}

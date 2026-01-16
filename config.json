@@ -9,7 +9,7 @@
         "max_recipients": 50,
         "allow_insecure_auth": true,
         "tls": {
-            "enabled": false,
+            "enabled": true,
             "cert_file": "certs/server.crt",
             "key_file": "certs/server.key"
         },

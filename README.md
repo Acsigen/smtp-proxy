@@ -1,10 +1,10 @@
 # SMTP Proxy
 
-A Go microservice that acts as an SMTP blackhole server with a web-based management UI. Emails are received via SMTP (with PLAIN and STARTTLS authentication), stored in SQLite, and can be viewed and managed through a Bootstrap-styled web interface.
+A Python microservice that acts as an SMTP blackhole server with a web-based management UI. Emails are received via SMTP (with PLAIN/LOGIN and STARTTLS authentication), stored in SQLite, and can be viewed and managed through a Bootstrap-styled web interface.
 
 ## Features
 
-- **SMTP Server**: Receives emails with PLAIN and STARTTLS authentication
+- **SMTP Server**: Receives emails with PLAIN/LOGIN and STARTTLS authentication
 - **Email Blackhole**: Stores emails in SQLite without forwarding
 - **Web UI**: Bootstrap 5 interface for viewing and managing emails
 - **Single User Login**: Session-based authentication for the web interface
@@ -12,18 +12,32 @@ A Go microservice that acts as an SMTP blackhole server with a web-based managem
 
 ## Requirements
 
-- Go 1.23 or later
+- Python 3.12 or later
 
 ## Installation
 
-### Build from Source
+### Setup Virtual Environment
 
 ```bash
 git clone <repository-url>
 cd smtp-proxy
-go mod tidy
-go build -o smtp-proxy ./cmd/smtp-proxy
+
+# Create and activate virtual environment
+python3.12 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
+
+### Dependencies
+
+- `fastapi` - Web framework
+- `uvicorn[standard]` - ASGI server
+- `requests` - HTTP client library
+- `jinja2` - Templating engine
+- `python-multipart` - Form data handling
+- `itsdangerous` - Signed cookies for sessions
 
 ## Configuration
 
@@ -94,11 +108,14 @@ The application uses a JSON configuration file. By default, it looks for `config
 ### Start the Server
 
 ```bash
+# Activate virtual environment
+source venv/bin/activate
+
 # Using default config.json
-./smtp-proxy
+python -m smtp_proxy.main
 
 # Using custom config file
-./smtp-proxy -config /path/to/config.json
+python -m smtp_proxy.main --config /path/to/config.json
 ```
 
 ### Access the Web UI
@@ -189,38 +206,35 @@ swaks --to recipient@example.com \
 
 ```
 smtp-proxy/
-├── cmd/
-│   └── smtp-proxy/
-│       └── main.go                 # Application entry point
-├── internal/
-│   ├── config/
-│   │   └── config.go               # Configuration loading
+├── smtp_proxy/
+│   ├── __init__.py
+│   ├── main.py                  # Application entry point
+│   ├── config.py                # Configuration loading
+│   ├── models.py                # Email and User models
 │   ├── database/
-│   │   ├── database.go             # SQLite connection and schema
-│   │   ├── email.go                # Email repository
-│   │   └── user.go                 # User repository
-│   ├── models/
-│   │   ├── email.go                # Email model
-│   │   └── user.go                 # User model
+│   │   ├── __init__.py
+│   │   ├── connection.py        # SQLite connection and schema
+│   │   ├── email_repository.py  # Email CRUD operations
+│   │   └── user_repository.py   # User CRUD operations
 │   ├── smtp/
-│   │   ├── backend.go              # SMTP backend implementation
-│   │   ├── session.go              # SMTP session handling
-│   │   └── server.go               # SMTP server setup
+│   │   ├── __init__.py
+│   │   ├── server.py            # Async SMTP server
+│   │   └── session.py           # SMTP session handling
 │   └── web/
-│       ├── handlers.go             # HTTP handlers
-│       ├── middleware.go           # Authentication middleware
-│       ├── routes.go               # Route registration
-│       └── server.go               # HTTP server setup
+│       ├── __init__.py
+│       ├── app.py               # FastAPI application factory
+│       ├── auth.py              # Session management
+│       └── routes.py            # HTTP routes and handlers
 ├── templates/
-│   ├── base.html                   # Base layout template
-│   ├── login.html                  # Login page
-│   ├── emails.html                 # Email list page
-│   └── email_detail.html           # Email detail page
-├── certs/                          # TLS certificates (optional)
-├── data/                           # SQLite database directory
-├── config.json                     # Configuration file
-├── go.mod
-└── go.sum
+│   ├── base.html                # Base layout template
+│   ├── login.html               # Login page
+│   ├── emails.html              # Email list page
+│   └── email_detail.html        # Email detail page
+├── certs/                       # TLS certificates (optional)
+├── data/                        # SQLite database directory
+├── config.json                  # Configuration file
+├── requirements.txt             # Python dependencies
+└── venv/                        # Virtual environment
 ```
 
 ## Database Schema
@@ -269,7 +283,7 @@ CREATE TABLE emails (
 - [ ] Integrate with cloud email providers for forwarding:
   - [ ] GMail
   - [ ] Outlook/Microsoft 365
-  - [ ] Yahoo Mail 
+  - [ ] Yahoo Mail
 
 ## License
 
